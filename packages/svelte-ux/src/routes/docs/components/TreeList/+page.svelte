@@ -1,6 +1,6 @@
 <script lang="ts">
   import { TreeList, Icon } from 'svelte-ux';
-  import { mdiFolder, mdiFileDocumentOutline } from '@mdi/js';
+  import { mdiFolder, mdiFileDocumentOutline, mdiChevronRight } from '@mdi/js';
   import type { TreeNode } from '@layerstack/utils/array';
   import Preview from '$lib/components/Preview.svelte';
 
@@ -68,6 +68,16 @@
   ];
 
   let selectedNode: TreeNode | null = null;
+  let expandedNodes = new Set<string>(['src', 'components']);
+
+  function toggleNode(id: string) {
+    if (expandedNodes.has(id)) {
+      expandedNodes.delete(id);
+    } else {
+      expandedNodes.add(id);
+    }
+    expandedNodes = expandedNodes;
+  }
 </script>
 
 <h1>Examples</h1>
@@ -150,6 +160,51 @@
         {#if node.children.length > 0}
           <Icon data={mdiFolder} class="text-warning" size="18px" />
         {:else}
+          <Icon data={mdiFileDocumentOutline} class="text-surface-content/40" size="18px" />
+        {/if}
+        <span>{node.name}</span>
+      </div>
+    </TreeList>
+  </div>
+</Preview>
+
+<h2>Collapsing Folders</h2>
+<p class="text-sm text-surface-content/60 mb-2">
+  You can build collapsible trees by keeping track of the expanded/collapsed state of nodes in your
+  application and using conditional classes (such as <code>[&amp;&gt;ul]:hidden</code>) to hide
+  child lists when collapsed.
+</p>
+
+<Preview>
+  <div class="p-2 border rounded bg-surface-100 max-w-xs">
+    <TreeList
+      nodes={fileTreeNodes}
+      classes={{
+        ul: 'pl-4 ml-1',
+        li: (node) => (expandedNodes.has(node.id) ? '' : '[&>ul]:hidden'),
+      }}
+      let:node
+    >
+      <div class="flex items-center gap-1 py-1 text-sm text-surface-content/85">
+        {#if node.children && node.children.length > 0}
+          <button
+            type="button"
+            class="flex items-center justify-center p-0.5 rounded hover:bg-surface-content/10 transition-colors"
+            on:click={() => toggleNode(node.id)}
+          >
+            <Icon
+              data={mdiChevronRight}
+              size="16px"
+              class="text-surface-content/50 transition-transform duration-150 {expandedNodes.has(
+                node.id
+              )
+                ? 'rotate-90'
+                : ''}"
+            />
+          </button>
+          <Icon data={mdiFolder} class="text-warning" size="18px" />
+        {:else}
+          <span class="w-[20px]"></span>
           <Icon data={mdiFileDocumentOutline} class="text-surface-content/40" size="18px" />
         {/if}
         <span>{node.name}</span>
